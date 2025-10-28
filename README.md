@@ -1,6 +1,3 @@
-# HTML/JS starter template
+# Web-sovelluskehitys
 
-Valmis pohja JS-harjoituksiin
-
--prettier conf
--eslint conf
+### HTML and CSS recap exercise
