@@ -1,4 +1,4 @@
 # Web-sovelluskehitys
 
-**_ users.metropolia.fi url link _**
+**users.metropolia.fi url link:**
 https://users.metropolia.fi/~nurha/
