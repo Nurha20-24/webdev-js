@@ -1,0 +1,27 @@
+body {
+  background-color: #f0f0f0;
+  font-family: sans-serif;
+  margin: 0px;
+  padding: 0px;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0px;
+  padding: 0px;
+  border: 1px solid #ccc;
+}
+
+th {
+  background-color: #7db6ae;
+  border-bottom: 1px solid #ccc;
+  font-weight: bold;
+  padding: 0.5em 1em;
+  text-align: left;
+}
+
+td {
+  border-bottom: 1px solid #ccc;
+  padding: 0.5em 1em;
+}
