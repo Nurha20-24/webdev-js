@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <title>Finnish Student Restaurants</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="main.js" defer></script>
+  </head>
+
+  <body>
+    <header>
+      <h1>Student Restaurants</h1>
+      <div id="user-controls">
+        <button id="login-btn">Login</button>
+        <div id="user-info" style="display: none">
+          <span id="welcome-message"></span>
+          <button id="profile-btn">Profile</button>
+          <button id="logout-btn">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div id="your-location"></div>
+
+      <div class="menu-type-selector">
+        <button id="daily-menu-btn" class="menu-btn active">Daily Menu</button>
+        <button id="weekly-menu-btn" class="menu-btn">Weekly Menu</button>
+      </div>
+
+      <div class="filters">
+        <button id="all-btn" class="filter-btn active">All Restaurants</button>
+        <button id="sodexo-btn" class="filter-btn">Sodexo</button>
+        <button id="compass-btn" class="filter-btn">Compass Group</button>
+
+        <select id="city-filter">
+          <option value="all">All Cities</option>
+        </select>
+      </div>
+
+      <div id="map"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Address</th>
+            <th>Distance</th>
+          </tr>
+        </thead>
+        <tbody id="results">
+          <!-- add restaurants here -->
+        </tbody>
+      </table>
+    </main>
+    <!-- modal -->
+
+    <dialog id="restaurant-modal">
+      <!-- add restaurant info here when restaurant is clicked -->
+    </dialog>
+
+    <dialog id="auth-dialog">
+      <!-- login modal content -->
+    </dialog>
+
+    <dialog id="profile-dialog">
+      <!-- profile modal content -->
+    </dialog>
+  </body>
+</html>
