@@ -72,8 +72,87 @@
       <!-- add restaurant info here when restaurant is clicked -->
     </dialog>
 
+    <!-- login modal content -->
     <dialog id="auth-dialog">
-      <!-- login modal content -->
+      <div class="auth-container">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="register">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+          <h2>Welcome Back</h2>
+
+          <div class="form-group">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" required />
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required />
+          </div>
+
+          <div class="form-error" id="login-error"></div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Login</button>
+            <button type="button" class="btn-secondary" id="close-auth-dialog">
+              Cancel
+            </button>
+          </div>
+        </form>
+
+        <!--Register Form-->
+        <form id="register-form" class="auth-form">
+          <h2>Create Account</h2>
+
+          <div class="form-group">
+            <label for="register-username">Username</label>
+            <input type="text" id="register-username" required maxlength="3" />
+            <small class="username-feedback"></small>
+          </div>
+
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input
+              type="password"
+              id="register-password"
+              required
+              minlength="6"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="register-confirm-password">Confirm Password</label>
+            <input
+              type="password"
+              id="register-confirm-password"
+              required
+              minlength="6"
+            />
+          </div>
+
+          <div class="form-error" id="register-error"></div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Register</button>
+            <button
+              type="button"
+              class="btn-secondary"
+              id="close-register-dialog"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </dialog>
 
     <dialog id="profile-dialog">
