@@ -1,12 +1,215 @@
 import {restaurantRow, restaurantModal} from './components.js';
-
 import {baseUrl} from './variables.js';
 import {fetchData} from './utils.js';
+import {
+  isLoggedIn,
+  login,
+  register,
+  logout,
+  getCurrentUser,
+  checkUsernameAvailability,
+} from './auth.js';
 
 fetchData(baseUrl);
 
 let allRestaurants = [];
 let currentFilter = 'all';
+let currentUser = null;
+
+// Auth UI functions
+// Update UI based on login state
+const updateAuthUI = (user) => {
+  const loginBtn = document.getElementById('login-btn');
+  const userInfo = document.getElementById('user-info');
+  const welcomeMessage = document.getElementById('welcome-message');
+
+  if (user) {
+    loginBtn.style.display = 'none';
+    userInfo.style.display = 'flex';
+    welcomeMessage.textContent = `Welcome, ${user.username}!`;
+    currentUser = user;
+  } else {
+    loginBtn.style.display = 'block';
+    userInfo.style.display = 'none';
+    welcomeMessage.textContent = '';
+    currentUser = null;
+  }
+};
+
+// Check if user is already logged in on page load
+const checkLoginStatus = async () => {
+  if (isLoggedIn()) {
+    const user = await getCurrentUser();
+    if (user) {
+      updateAuthUI(user);
+    } else {
+      logout();
+      updateAuthUI(null);
+    }
+  }
+};
+
+//Auth dialog handlers
+
+// Setup auth dialog functionality
+const setupAuthDialog = () => {
+  const authDialog = document.getElementById('auth-dialog');
+  const loginBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const closeAuthBtn = document.getElementById('close-auth-dialog');
+  const closeRegisterBtn = document.getElementById('close-register-dialog');
+
+  // Tab switching
+  const authTabs = document.querySelectorAll('.auth-tab');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+
+  authTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+
+      // Update active tab
+      authTabs.forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Show correct form
+      if (tabName == 'login') {
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
+      } else {
+        registerForm.classList.add('active');
+        loginForm.classList.remove('active');
+      }
+
+      // Clear previous error messages
+      document.getElementById('login-error').textContent = '';
+      document.getElementById('register-error').textContent = '';
+    });
+  });
+
+  // Open login dialog
+  loginBtn.addEventListener('click', () => {
+    // Reset to login tab
+    authTabs[0].click();
+    loginForm.reset();
+    registerForm.reset();
+    authDialog.showModal();
+    console.log('Login dialog opened');
+  });
+
+  //Close dialog buttons
+  closeAuthBtn.addEventListener('click', () => authDialog.close());
+  closeRegisterBtn.addEventListener('click', () => authDialog.close());
+
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    logout();
+    updateAuthUI(null);
+    alert('Logged out successfully');
+  });
+
+  // username availibility check as user types
+  const registerUsername = document.getElementById('register-username');
+  const usernameFeedback = document.querySelector('.username-feedback');
+  let usernameTimeout;
+
+  registerUsername.addEventListener('input', async () => {
+    const username = registerUsername.value.trim();
+
+    // clear previous timeout
+    clearTimeout(usernameTimeout);
+
+    if (username.length < 3) {
+      usernameFeedback.textContent = '';
+      usernameFeedback.className = 'username-feedback';
+      return;
+    }
+
+    // show checking message
+    usernameFeedback.textContent = 'Checking...';
+    usernameFeedback.className = 'username-feedback checking';
+
+    // check after stops typing (500ms delay)
+    usernameTimeout = setTimeout(async () => {
+      const available = await checkUsernameAvailability(username);
+
+      if (available) {
+        usernameFeedback.textContent = '✓ Username available';
+        usernameFeedback.className = 'username-feedback available';
+      } else {
+        usernameFeedback.textContent = '✗ Username already taken';
+        usernameFeedback.className = 'username-feedback taken';
+      }
+    }, 500);
+  });
+
+  // Handle login form submission
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+
+    errorDiv.textContent = '';
+
+    // login
+    const result = await login(username, password);
+
+    if (result.success) {
+      updateAuthUI(result.user);
+      authDialog.close();
+      loginForm.reset();
+      alert('Login successful!');
+    } else {
+      errorDiv.textContent =
+        result.message || 'Login failed. Please try again.';
+    }
+  });
+
+  // Handle register for submission
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('register-username').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById(
+      'register-confirm-password'
+    ).value;
+    const errorDiv = document.getElementById('register-error');
+
+    errorDiv.textContent = '';
+
+    // Validate password match
+    if (password !== confirmPassword) {
+      errorDiv.textContent = 'Passwords do not match!';
+      return;
+    }
+
+    // Validate username length
+    if (username.length < 3) {
+      errorDiv.textContent = 'Username must be at least 3 characters long!';
+      return;
+    }
+
+    // Register
+    const result = await register(username, password, email);
+
+    if (result.success) {
+      alert('registration successful! Please login.');
+
+      // Swith login tab
+      authTabs[0].click();
+      registerForm.reset();
+      usernameFeedback.textContent = '';
+      usernameFeedback.className = 'username-feedback';
+    } else {
+      errorDiv.textContent =
+        result.message || 'Registration failed. Please try again.';
+    }
+  });
+};
 
 const filterRestaurants = (restaurants, company) => {
   if (company === 'all') {
@@ -228,4 +431,6 @@ const getLocation = () => {
     //proceedWithLocation(helsinkiLat, helsinkiLon); //Use Helsinki center coordinates as fallback
   }
 };
+setupAuthDialog();
+checkLoginStatus();
 getLocation();

@@ -1,4 +1,4 @@
-const authBaseUrl = 'https://media2.edu.metropolia.fi/restaurant//api/v1';
+const authBaseUrl = 'https://media2.edu.metropolia.fi/restaurant/api/v1';
 
 // Get token from local storage
 const getToken = () => {
@@ -24,6 +24,9 @@ const isLoggedIn = () => {
 const checkUsernameAvailability = async (username) => {
   try {
     const response = await fetch(`${authBaseUrl}/users/available/${username}`);
+
+    const data = await response.json();
+    return data.available;
   } catch (error) {
     console.error('Error checking username: ', error);
     return false;
@@ -77,4 +80,48 @@ const login = async (username, password) => {
     console.error('Login error: ', error);
     return {success: false, message: error.message};
   }
+};
+
+// Get current user info using token
+const getCurrentUser = async () => {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${authBaseUrl}/users/token`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      // Token is invalid, remove it
+      removeToken();
+      return null;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting current user: ', error);
+    removeToken();
+    return null;
+  }
+};
+
+//Logout user
+const logout = () => {
+  removeToken();
+};
+
+export {
+  getToken,
+  saveToken,
+  removeToken,
+  isLoggedIn,
+  checkUsernameAvailability,
+  register,
+  login,
+  getCurrentUser,
+  logout,
 };
