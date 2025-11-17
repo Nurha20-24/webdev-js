@@ -1,15 +1,23 @@
-const restaurantRow = (restaurant) => {
+const restaurantRow = (restaurant, isFavorite = false) => {
   const {name, company, address, distance} = restaurant;
 
   const tr = document.createElement('tr');
-  tr.innerHTML = `<td>${name}</td>
+
+  if (isFavorite) {
+    tr.classList.add('favorite-restaurant');
+  }
+
+  const starIcon = isFavorite ? '<span class="favorite-start">⭐</span> ' : '';
+
+  tr.innerHTML = `
+  <td>${starIcon}${name}</td>
   <td>${company}</td>
   <td>${address}</td>
   <td>~&nbsp;${distance ? distance.toFixed(1) : '?'}km</td>`;
   return tr;
 };
 
-const restaurantModal = (restaurant, menu) => {
+const restaurantModal = (restaurant, menu, isFavorite = false) => {
   const {name, address, postalCode, city, phone, company} = restaurant;
 
   let menuHtml = '';
@@ -28,6 +36,11 @@ const restaurantModal = (restaurant, menu) => {
     });
   }
 
+  // Favorite button - show different text if already favourite
+  const favoriteButtonHtml = `
+  <button class="btn-favorite" data-restaurant-id="${_id}">
+  ${isFavorite ? '⭐ Remove from Favourites' : '☆ Set as Favourite'}</button>`;
+
   return `
       <div class="modal-content">
             <h1>${name}</h1>
@@ -36,6 +49,9 @@ const restaurantModal = (restaurant, menu) => {
             <p><strong>City: </strong>${city}</p>
             <p><strong>Phone: </strong>${phone}</p>
             <p><strong>Company: </strong>${company}</p>
+
+            ${favoriteButtonHtml}
+
             <div class="menu-section">
             <h4>Today's Menu</h4>
               ${menuHtml || '<p>Menu not available</p>'}

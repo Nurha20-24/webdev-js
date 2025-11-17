@@ -8,6 +8,8 @@ import {
   logout,
   getCurrentUser,
   checkUsernameAvailability,
+  updateUser,
+  deleteUser,
 } from './auth.js';
 
 fetchData(baseUrl);
@@ -113,7 +115,7 @@ const setupAuthDialog = () => {
   const usernameFeedback = document.querySelector('.username-feedback');
   let usernameTimeout;
 
-  registerUsername.addEventListener('input', async () => {
+  registerUsername.addEventListener('input', () => {
     const username = registerUsername.value.trim();
 
     // clear previous timeout
@@ -209,6 +211,208 @@ const setupAuthDialog = () => {
         result.message || 'Registration failed. Please try again.';
     }
   });
+};
+
+// Profile dialog handlers
+const setupProfileDialog = () => {
+  const profileDialog = document.getElementById('profile-dialog');
+  const profileBtn = document.getElementById('profile-btn');
+  const closeProfileBtn = document.getElementById('close-profile-btn');
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit-btn');
+  const deleteAccountBtn = document.getElementById('delete-account-btn');
+
+  const profileView = document.getElementById('profile-view');
+  const profileEdit = document.getElementById('profile-edit');
+  const profileForm = document.getElementById('profile-edit-form');
+
+  // Open profile dialog
+  profileBtn.addEventListener('click', async () => {
+    console.log('Profile button clicked!'); // ADD THIS
+    console.log('Current user:', currentUser); // ADD THIS
+    if (!currentUser) {
+      alert('Please login first');
+      return;
+    }
+
+    const user = await getCurrentUser();
+    console.log('Refreshed user:', user); // ADD THIS
+    if (user) {
+      currentUser = user;
+      displayProfileInfo(user);
+      showProfileView();
+      profileDialog.showModal();
+    }
+  });
+
+  // Close profile dialog
+  closeProfileBtn.addEventListener('click', () => profileDialog.close());
+
+  // Switch to edit mode
+  editProfileBtn.addEventListener('click', () => {
+    showProfileEdit();
+  });
+
+  // Cancel edit mode
+  cancelEditBtn.addEventListener('click', () => {
+    showProfileView();
+    profileForm.reset();
+    document.getElementById('profile-error').textContent = '';
+    document.getElementById('profile-success').textContent = '';
+  });
+
+  // Username availability check for edit form
+  const editUsername = document.getElementById('edit-username');
+  const editUsernameFeedback = document.querySelector(
+    '.edit-username-feedback'
+  );
+  let editUsernameTimeout;
+
+  editUsername.addEventListener('input', () => {
+    const username = editUsername.value.trim();
+
+    clearTimeout(editUsernameTimeout);
+
+    // If username is unchanged, clear feedback
+    if (username === currentUser.username) {
+      editUsernameFeedback.textContent = '';
+      editUsernameFeedback.className = 'edit-username-feedback';
+      return;
+    }
+
+    if (username.length < 3) {
+      editUsernameFeedback.textContent = '';
+      editUsernameFeedback.className = 'username-feedback';
+      return;
+    }
+
+    editUsernameFeedback.textContent = 'Checking...';
+    editUsernameFeedback.className = 'edit-username-feedback checking';
+
+    editUsernameTimeout = setTimeout(async () => {
+      const available = await checkUsernameAvailability(username);
+
+      if (available) {
+        editUsernameFeedback.textContent = '✓ Username available';
+        editUsernameFeedback.className = 'edit-username-feedback available';
+      } else {
+        editUsernameFeedback.textContent = '✗ Username already taken';
+        editUsernameFeedback.className = 'edit-username-feedback taken';
+      }
+    }, 500);
+  });
+
+  // Handle profile update
+  profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('edit-username').value.trim();
+    const email = document.getElementById('edit-email').value.trim();
+    const password = document.getElementById('edit-password').value;
+    const confirmedPassword = document.getElementById(
+      'edit-confirm-password'
+    ).value;
+
+    const errorDiv = document.getElementById('profile-error');
+    const successDiv = document.getElementById('profile-success');
+
+    errorDiv.textContent = '';
+    successDiv.textContent = '';
+
+    // Validate password match if password provided
+    if (password || confirmedPassword) {
+      if (password !== confirmedPassword) {
+        errorDiv.textContent = 'Passwords do not match!';
+        return;
+      }
+      if (password.length < 6) {
+        errorDiv.textContent = 'Password must be at least 6 characters long!';
+        return;
+      }
+    }
+
+    // Build update object (only include changed fields)
+    const updates = {};
+    if (username !== currentUser.username) updates.username = username;
+    if (email !== currentUser.email) updates.email = email;
+    if (password) updates.password = password;
+
+    // Check if anyThing changed
+    if (Object.keys(updates).length === 0) {
+      errorDiv.textContent = 'No changes to save.';
+      return;
+    }
+
+    // Update profile
+    const result = await updateUser(updates);
+
+    if (result.success) {
+      successDiv.textContent = 'Profile updated succcessfully!';
+
+      // Refresh current user data
+      const updatedUser = await getCurrentUser();
+      if (updatedUser) {
+        currentUser = updatedUser;
+        updateAuthUI(updatedUser);
+        displayProfileInfo(updatedUser);
+      }
+
+      // Switch back to view mode after short delay
+      setTimeout(() => {
+        showProfileView();
+        successDiv.textContent = '';
+      }, 2000);
+    } else {
+      errorDiv.textContent =
+        result.message || 'Update failed. Please try again.';
+    }
+  });
+
+  // Handle account deletion
+  deleteAccountBtn.addEventListener('click', async () => {
+    const confirmed = confirm(
+      'Are you sure you want to delete your account? This action cannot be undone!'
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm(
+      'This is your last chance to cancel. Are you absolutely sure? '
+    );
+
+    if (!doubleConfirm) return;
+
+    const result = await deleteUser();
+    if (result.success) {
+      alert('Account deleted successfully.');
+      profileDialog.close();
+      updateAuthUI(null);
+      currentUser = null;
+    } else {
+      alert('Failed to delete account: ' + result.message);
+    }
+  });
+
+  function displayProfileInfo(user) {
+    document.getElementById('profile-username-display').textContent =
+      user.username;
+    document.getElementById('profile-email-display').textContent = user.email;
+
+    document.getElementById('edit-username').value = user.username;
+    document.getElementById('edit-email').value = user.email;
+    document.getElementById('edit-password').value = '';
+    document.getElementById('edit-confirm-password').value = '';
+  }
+
+  function showProfileView() {
+    profileView.style.display = 'block';
+    profileEdit.style.display = 'none';
+  }
+
+  function showProfileEdit() {
+    profileView.style.display = 'none';
+    profileEdit.style.display = 'block';
+  }
 };
 
 const filterRestaurants = (restaurants, company) => {
@@ -431,6 +635,8 @@ const getLocation = () => {
     //proceedWithLocation(helsinkiLat, helsinkiLon); //Use Helsinki center coordinates as fallback
   }
 };
+
 setupAuthDialog();
 checkLoginStatus();
+setupProfileDialog();
 getLocation();

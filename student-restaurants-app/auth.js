@@ -2,7 +2,7 @@ const authBaseUrl = 'https://media2.edu.metropolia.fi/restaurant/api/v1';
 
 // Get token from local storage
 const getToken = () => {
-  return localStorage.getItem('authToken');
+  return localStorage.getItem('token');
 };
 
 // Save token to local storage
@@ -114,6 +114,66 @@ const logout = () => {
   removeToken();
 };
 
+// Update user profile
+const updateUser = async (updates) => {
+  const token = getToken();
+  if (!token) {
+    return {success: false, message: 'Not logged in'};
+  }
+
+  try {
+    const response = await fetch(`${authBaseUrl}/users`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Update failed');
+    }
+
+    return {success: true, user: data.data};
+  } catch (error) {
+    console.error('Update error:', error);
+    return {success: false, message: error.message};
+  }
+};
+
+// Delete user account
+const deleteUser = async () => {
+  const token = getToken();
+  if (!token) {
+    return {success: false, message: 'Not logged in'};
+  }
+
+  try {
+    const response = await fetch(`${authBaseUrl}/users`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Delete failed');
+    }
+
+    // Remove token after successful deletion
+    removeToken();
+    return {success: true, message: data.message};
+  } catch (error) {
+    console.error('Delete error:', error);
+    return {success: false, message: error.message};
+  }
+};
+
 export {
   getToken,
   saveToken,
@@ -124,4 +184,6 @@ export {
   login,
   getCurrentUser,
   logout,
+  updateUser,
+  deleteUser,
 };
