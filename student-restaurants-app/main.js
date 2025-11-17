@@ -17,6 +17,116 @@ fetchData(baseUrl);
 let allRestaurants = [];
 let currentFilter = 'all';
 let currentUser = null;
+let currentCityFilter = 'all';
+
+// City filter functions
+
+// Extracts unique cities from restaurants
+const getUniqueCities = (restaurants) => {
+  const cities = restaurants
+    .map((restaurant) => restaurant.city)
+    .filter((city) => city); // Filter out undefined/null cities
+
+  // Get unique cities and sort alphabetically
+  return [...new Set(cities)].sort();
+};
+
+// Populate city dropdown with wnuique cities
+const populateCityFilter = (restaurants) => {
+  const cityFilter = document.getElementById('city-filter');
+  const cities = getUniqueCities(restaurants);
+
+  // Clear existing options except "All Cities"
+  cityFilter.innerHTML = '<option value="all">All Cities</option>';
+
+  cities.forEach((city) => {
+    const option = document.createElement('option');
+    option.value = city;
+    option.textContent = city;
+    cityFilter.appendChild(option);
+  });
+};
+
+// Filter restaurants by both company and city
+const filterRestaurantsByCompanyAndCity = (restaurants, company, city) => {
+  let filtered = restaurants;
+
+  // Filter by company
+  if (company !== 'all') {
+    filtered = filtered.filter((restaurant) => restaurant.company === company);
+  }
+
+  // Filter by city
+  if (city !== 'all') {
+    filtered = filtered.filter((restaurant) => restaurant.city === city);
+  }
+  return filtered;
+};
+
+// Setup city filter event listener
+const setupCityFilter = () => {
+  const cityFilter = document.getElementById('city-filter');
+
+  cityFilter.addEventListener('change', (e) => {
+    currentCityFilter = e.target.value;
+
+    const filtered = filterRestaurantsByCompanyAndCity(
+      allRestaurants,
+      currentFilter,
+      currentCityFilter
+    );
+    updateRestaurantDisplay(filtered);
+  });
+};
+
+// Favourite restaurant functions
+
+// handle setting/removing favourite restaurant
+const handleFavouriteClick = async (restaurantID) => {
+  if (!currentUser) {
+    alert('Please login to set favourite restaurant.');
+    return;
+  }
+
+  try {
+    // Check if restaurant is already favourite
+    const isFavourite = currentUser.favouriteRestaurant === restaurantID;
+
+    let result;
+    if (isFavourite) {
+      // Remove favourite (set to null)
+      result = await updateUser({favouriteRestaurant: ''});
+    } else {
+      // Set as favourite
+      result = await updateUser({favouriteRestaurant: restaurantID});
+    }
+
+    if (result.success) {
+      // Update current user data
+      const updatedUser = await getCurrentUser();
+      if (updatedUser) {
+        currentUser = updatedUser;
+
+        // Refresh the restaurant display to show new favorite
+        const filtered = filterRestaurants(allRestaurants, currentFilter);
+        updateRestaurantDisplay(filtered);
+        alert(isFavourite ? 'Removed from favorites' : 'Set as favorite!');
+      }
+    } else {
+      alert('Failed to updated favorite: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Error updating favourite: ', error);
+    alert('Failed to update favourite restaurant');
+  }
+};
+
+const isFavouriteRestaurant = (restaurantId) => {
+  if (!currentUser || !currentUser.favouriteRestaurant) {
+    return false;
+  }
+  return currentUser.favouriteRestaurant === restaurantId;
+};
 
 // Auth UI functions
 // Update UI based on login state
@@ -461,24 +571,39 @@ const setupFilters = () => {
   allbtn.addEventListener('click', () => {
     currentFilter = 'all';
     updateFilterButtons('all');
-    updateRestaurantDisplay(allRestaurants);
+
+    // Apply both company and city filters
+    const filtered = filterRestaurantsByCompanyAndCity(
+      allRestaurants,
+      'all',
+      currentCityFilter
+    );
+
+    updateRestaurantDisplay(filtered);
   });
 
   sodexoBtn.addEventListener('click', () => {
     currentFilter = 'Sodexo';
     updateFilterButtons('sodexo');
-    const sodexoRestaurants = filterRestaurants(allRestaurants, 'Sodexo');
-    updateRestaurantDisplay(sodexoRestaurants);
+
+    const filtered = filterRestaurantsByCompanyAndCity(
+      allRestaurants,
+      'Sodexo',
+      currentCityFilter
+    );
+    updateRestaurantDisplay(filtered);
   });
 
   compassBtn.addEventListener('click', () => {
     currentFilter = 'Compass Group';
     updateFilterButtons('compass');
-    const compassRestaurants = filterRestaurants(
+
+    const filtered = filterRestaurantsByCompanyAndCity(
       allRestaurants,
-      'Compass Group'
+      'Compass Group',
+      currentCityFilter
     );
-    updateRestaurantDisplay(compassRestaurants);
+    updateRestaurantDisplay(filtered);
   });
 };
 
@@ -551,10 +676,14 @@ const renderMap = (restaurantArray) => {
 // render restaurant data to the UI table
 const renderUI = (array) => {
   array.forEach((e) => {
-    const tr = restaurantRow(e);
+    // Check if this restaurant is the favourite
+    const isFavourite = isFavouriteRestaurant(e._id);
+
+    // Create restaurant row with favourite status
+    const tr = restaurantRow(e, isFavourite);
     results.appendChild(tr);
 
-    // Add click event to highlight selected row
+    // Add click event to highlight selected row and show modal
     tr.addEventListener('click', async () => {
       document.querySelectorAll('.highlight').forEach((element) => {
         element.classList.remove('highlight');
@@ -566,10 +695,19 @@ const renderUI = (array) => {
       const menuData = await fetchMenu(e._id, 'fi');
       console.log('Menu for', e.name, ':', menuData);
 
-      const dialogContent = restaurantModal(e, menuData);
+      const dialogContent = restaurantModal(e, menuData, isFavourite);
 
       dialog.innerHTML = dialogContent;
       dialog.showModal();
+
+      // Add event listener to favourite button in modal
+      const favoriteBtn = dialog.querySelector('.btn-favorite');
+      if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', async () => {
+          await handleFavouriteClick(e._id);
+          dialog.close();
+        });
+      }
     });
   });
 };
@@ -595,6 +733,9 @@ const proceedWithLocation = (userLat, userLon, restaurantData) => {
 
   renderUI(alphabeticalRestaurant);
   renderMap(alphabeticalRestaurant);
+
+  populateCityFilter(allRestaurants);
+  setupCityFilter();
 
   setupFilters();
 };
@@ -639,4 +780,5 @@ const getLocation = () => {
 setupAuthDialog();
 checkLoginStatus();
 setupProfileDialog();
+
 getLocation();

@@ -7,7 +7,7 @@ const restaurantRow = (restaurant, isFavorite = false) => {
     tr.classList.add('favorite-restaurant');
   }
 
-  const starIcon = isFavorite ? '<span class="favorite-start">⭐</span> ' : '';
+  const starIcon = isFavorite ? '<span class="favorite-star">⭐</span> ' : '';
 
   tr.innerHTML = `
   <td>${starIcon}${name}</td>
@@ -19,6 +19,8 @@ const restaurantRow = (restaurant, isFavorite = false) => {
 
 const restaurantModal = (restaurant, menu, isFavorite = false) => {
   const {name, address, postalCode, city, phone, company} = restaurant;
+
+  const restaurantID = restaurant._id;
 
   let menuHtml = '';
   if (menu && menu.courses) {
@@ -38,7 +40,7 @@ const restaurantModal = (restaurant, menu, isFavorite = false) => {
 
   // Favorite button - show different text if already favourite
   const favoriteButtonHtml = `
-  <button class="btn-favorite" data-restaurant-id="${_id}">
+  <button class="btn-favorite" data-restaurant-id="${restaurantID}">
   ${isFavorite ? '⭐ Remove from Favourites' : '☆ Set as Favourite'}</button>`;
 
   return `

@@ -533,3 +533,29 @@ header h1 {
 .btn-danger:hover {
   background-color: #a83224;
 }
+
+.favorite-restaurant {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffd700;
+}
+
+.favorite-star {
+  margin-right: 8px;
+}
+
+.btn-favorite {
+  width: 70%;
+  background: linear-gradient(135deg, #ffdd57 0%, #ffc107 100%);
+  padding: 12px 20px;
+  color: #333;
+  border: 2px solid #f0c800;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-favorite:hover {
+  background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+}
