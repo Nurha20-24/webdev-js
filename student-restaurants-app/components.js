@@ -1,16 +1,28 @@
-const restaurantRow = (restaurant, isFavorite = false) => {
+const restaurantRow = (restaurant, isFavorite = false, isClosest = false) => {
   const {name, company, address, distance} = restaurant;
 
   const tr = document.createElement('tr');
 
+  // Add favorite class if this is the favorite restaurant
   if (isFavorite) {
     tr.classList.add('favorite-restaurant');
   }
 
+  // Add closest class if this is the closest restaurant
+  if (isClosest) {
+    tr.classList.add('closest-restaurant');
+  }
+
+  // Add star icon if favorite
   const starIcon = isFavorite ? '<span class="favorite-star">⭐</span> ' : '';
 
+  // Add closest icon if closest
+  const closestIcon = isClosest
+    ? '<span class="closest-badge">📍 Closest</span>'
+    : '';
+
   tr.innerHTML = `
-  <td>${starIcon}${name}</td>
+  <td>${starIcon}${name}${closestIcon}</td>
   <td>${company}</td>
   <td>${address}</td>
   <td>~&nbsp;${distance ? distance.toFixed(1) : '?'}km</td>`;

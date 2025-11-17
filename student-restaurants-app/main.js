@@ -716,14 +716,38 @@ const renderMap = (restaurantArray) => {
   });
 };
 
+// Find closest restautrant from an array
+const findClosestRestaurant = (restaurants) => {
+  if (!restaurants || restaurants.length === 0) {
+    return null;
+  }
+
+  // Find restaurant with minimum distance
+  let closest = restaurants[0];
+
+  restaurants.forEach((restaurant) => {
+    if (restaurant.distance && restaurant.distance < closest.distance) {
+      closest = restaurant;
+    }
+  });
+
+  return closest._id;
+};
+
 // render restaurant data to the UI table
 const renderUI = (array) => {
+  // Find closest restaurant ID
+  const closestRestaurantId = findClosestRestaurant(array);
+
   array.forEach((e) => {
     // Check if this restaurant is the favourite
     const isFavourite = isFavouriteRestaurant(e._id);
 
+    // Check if this restaurant is the closest
+    const isClosest = e._id === closestRestaurantId;
+
     // Create restaurant row with favourite status
-    const tr = restaurantRow(e, isFavourite);
+    const tr = restaurantRow(e, isFavourite, isClosest);
     results.appendChild(tr);
 
     // Add click event to highlight selected row and show modal
@@ -736,16 +760,15 @@ const renderUI = (array) => {
 
       const dialog = document.querySelector('dialog');
 
-      let menuData;
       let dialogContent;
 
       // Fetch correct menu based on selection
       if (currentMenuType === 'weekly') {
-        menuData = await fetchWeeklyMenu(e._id, 'fi');
-        console.log('Weekly Menu for', e.name, ':', menuData);
-        dialogContent = restaurantModalWeekly(e, menuData, isFavourite);
+        const weeklyMenuData = await fetchWeeklyMenu(e._id, 'fi');
+        console.log('Weekly Menu for', e.name, ':', weeklyMenuData);
+        dialogContent = restaurantModalWeekly(e, weeklyMenuData, isFavourite);
       } else {
-        menuData = await fetchMenu(e._id, 'fi');
+        const menuData = await fetchMenu(e._id, 'fi');
         console.log('Menu for', e.name, ':', menuData);
         dialogContent = restaurantModal(e, menuData, isFavourite);
       }
@@ -812,7 +835,9 @@ const getLocation = () => {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
-    yourLocation.innerHTML = `Your Location: <br> Latitude: ${latitude} <br> Longitude: ${longitude}`;
+    yourLocation.innerHTML = `Your Location: <br> Latitude: ${latitude.toFixed(
+      4
+    )} <br> Longitude: ${longitude.toFixed(4)}`;
 
     loadRestaurantDataWithLocation(latitude, longitude);
   }

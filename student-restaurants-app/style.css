@@ -1,43 +1,56 @@
+:root {
+  --primary-color: #2c5f5d;
+  --secondary-color: #89c7c3;
+  --accent-color: #7db4b0;
+  --background-color: #f8fafc;
+  --text-color: #232222;
+}
+
 body {
-  background-color: #e0e0e0;
-  font-family: sans-serif, Arial, Helvetica;
+  background-color: var(--background-color);
+  font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
   margin: 0;
   padding: 0;
+  color: var(--text-color);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  border-spacing: 0;
-  margin-top: 10px;
-  padding: 0;
-  cursor: pointer;
-  overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
   background-color: white;
+  cursor: pointer;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 th {
-  background-color: #89c7c3;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: white;
   border-bottom: 1px solid #ccc;
-  font-weight: bold;
-  padding: 0.5em 1em;
+  font-weight: 600;
+  padding: 1rem;
   text-align: left;
   cursor: text;
 }
 
 td {
   border-bottom: 1px solid #ccc;
-  padding: 0.5em 1em;
+  padding: 1rem;
+  transition: background-color 0.2s ease;
 }
 
 #map {
   height: 50dvh;
-  width: 100dvw;
+  width: 99%;
   border-radius: 8px;
   border: 2px solid #dbdada;
-  background-color: #e9ecef; /* placeholder color */
+  margin: 0 auto;
 }
 
 .highlight {
@@ -46,27 +59,42 @@ td {
 }
 
 dialog {
-  margin: auto;
   border: none;
-  border-radius: 5%;
-  padding: 1rem 2rem;
-  background-color: rgb(224, 203, 220);
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  max-width: 600px;
+  width: 90%;
   cursor: text;
+}
+
+.modal-content {
+  padding: 2rem;
+  background: white;
 }
 
 .modal-content button {
   font-weight: bold;
   margin-top: 15px;
-  padding: 10px 18px;
-  border-radius: 4px;
+  padding: 12px 24px;
+  border-radius: 6px;
   cursor: pointer;
   border: none;
   background-color: #7db4b0;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.modal-content button:hover {
+  background-color: #6ba19d;
+  transform: translateY(-1px);
 }
 
 tr:not(.highlight):hover {
   background-color: #f1eef1;
   transition: background-color 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .menu-section {
@@ -101,47 +129,51 @@ tr:not(.highlight):hover {
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: 10px;
+  header {
+    padding: 1rem;
   }
 
-  header {
-    flex-direction: column;
-    width: 100%;
+  header h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
   }
 
   #user-controls {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .menu-btn {
-    width: 100%;
-    margin: 5px 0;
+    gap: 0.5rem;
   }
 
   .menu-type-selector {
     flex-direction: column;
   }
 
-  .filter-btn {
-    width: 100%;
-    margin: 5px 0;
+  .filters {
+    gap: 10px;
   }
+
+  .filter-btn,
+  .menu-btn,
   #city-filter {
-    width: 70%;
-    margin: 5px 0;
+    width: 100%;
+    margin: 2px;
+    padding: 10px 15px;
+    font-size: 1rem;
   }
 }
 
 .filters {
-  margin: 20px 0;
-  text-align: center;
+  display: flex;
   flex-wrap: wrap;
   gap: 15px;
+  margin: 20px 0;
+  justify-content: center;
+  align-items: center;
 }
 
-.filter-btn {
+.filter-btn,
+.menu-btn,
+#city-filter {
+  height: 44px;
+  box-sizing: border-box;
   padding: 10px 20px;
   margin: 0 10px;
   border: 2px solid #89c7c3;
@@ -149,12 +181,15 @@ tr:not(.highlight):hover {
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: bold;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .filter-btn.active,
 .filter-btn:hover {
-  background-color: #89c7c3;
+  background-color: var(--secondary-color);
+  transform: translateY(-2px); /* Subtle lift effect */
+  box-shadow: 0 4px 12px rgba(137, 199, 195, 0.3);
 }
 
 header {
@@ -187,9 +222,9 @@ header h1 {
   background: transparent;
   border-radius: 5px;
   color: white;
-  font-weight: bold;
   cursor: pointer;
-  font-size: small;
+  font-size: 1rem;
+  font-weight: 600;
   transition: all 0.3s ease;
   margin: 0 2px;
 }
@@ -205,18 +240,6 @@ header h1 {
   display: flex;
   margin: 20px 0;
   justify-content: center;
-}
-
-.menu-btn {
-  padding: 13px 25px;
-  margin: 0 10px;
-  border: 2px solid #89c7c3;
-  background: white;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  color: #2c5f5d;
 }
 
 .menu-btn.active,
@@ -235,6 +258,27 @@ header h1 {
 
 #city-filter:hover {
   background-color: #f5f5f5;
+}
+
+#welcome-message {
+  font-weight: 500;
+  margin-right: 15px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+}
+
+#your-location {
+  background: white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  margin: 8px 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  font-weight: 500;
+  border-left: 4px solid #89c7c3;
+  font-size: 0.9rem;
 }
 
 #auth-dialog,
@@ -424,22 +468,6 @@ header h1 {
   }
 }
 
-#welcome-message {
-  font-weight: 500;
-  margin-right: 20px;
-  padding: 8px 12px;
-}
-
-#your-location {
-  background: white;
-  padding: 15px;
-  border-radius: 6px;
-  margin: 15px 15px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  font-weight: 500;
-}
-
 .profile-container h2 {
   margin: 0 0 1.5rem 0;
   color: #2c5f5d;
@@ -544,7 +572,8 @@ header h1 {
 }
 
 .btn-favorite {
-  width: 70%;
+  width: auto;
+  min-width: 200px;
   background: linear-gradient(135deg, #ffdd57 0%, #ffc107 100%);
   padding: 12px 20px;
   color: #333;
@@ -573,7 +602,7 @@ header h1 {
 .day-menu h5 {
   margin: 0 0 15px 0;
   color: #113936;
-  font-size: 0.8rem;
+  font-size: 1rem;
   padding: 8px 12px;
   background: linear-gradient(135deg, #8ec7c3 0%, #a8d8d4 100%);
   border-radius: 5px;
@@ -588,4 +617,20 @@ header h1 {
 dialog .modal-content {
   max-height: 80vh;
   overflow-y: auto;
+}
+
+.closest-restaurant {
+  background-color: #e6f7ff;
+  border-left: 4px solid #328380;
+}
+
+.closest-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #2c5f5d 0%, #5a9c98 100%);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-left: 8px;
+  vertical-align: middle;
 }
