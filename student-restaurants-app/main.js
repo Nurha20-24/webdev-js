@@ -1,4 +1,8 @@
-import {restaurantRow, restaurantModal} from './components.js';
+import {
+  restaurantRow,
+  restaurantModal,
+  restaurantModalWeekly,
+} from './components.js';
 import {baseUrl} from './variables.js';
 import {fetchData} from './utils.js';
 import {
@@ -18,6 +22,7 @@ let allRestaurants = [];
 let currentFilter = 'all';
 let currentUser = null;
 let currentCityFilter = 'all';
+let currentMenuType = 'daily';
 
 // City filter functions
 
@@ -81,7 +86,7 @@ const setupCityFilter = () => {
 
 // Favourite restaurant functions
 
-// handle setting/removing favourite restaurant
+// handle setting favourite restaurant
 const handleFavouriteClick = async (restaurantID) => {
   if (!currentUser) {
     alert('Please login to set favourite restaurant.');
@@ -92,14 +97,14 @@ const handleFavouriteClick = async (restaurantID) => {
     // Check if restaurant is already favourite
     const isFavourite = currentUser.favouriteRestaurant === restaurantID;
 
-    let result;
+    // If it's already favourite, don't do anything
     if (isFavourite) {
-      // Remove favourite (set to null)
-      result = await updateUser({favouriteRestaurant: ''});
-    } else {
-      // Set as favourite
-      result = await updateUser({favouriteRestaurant: restaurantID});
+      alert('This is already you favourite restaurant!');
+      return;
     }
+
+    // Set as favourite
+    const result = await updateUser({favouriteRestaurant: restaurantID});
 
     if (result.success) {
       // Update current user data
@@ -108,12 +113,17 @@ const handleFavouriteClick = async (restaurantID) => {
         currentUser = updatedUser;
 
         // Refresh the restaurant display to show new favorite
-        const filtered = filterRestaurants(allRestaurants, currentFilter);
+        const filtered = filterRestaurantsByCompanyAndCity(
+          allRestaurants,
+          currentFilter,
+          currentCityFilter
+        );
         updateRestaurantDisplay(filtered);
-        alert(isFavourite ? 'Removed from favorites' : 'Set as favorite!');
+
+        // alert('Set as favorite! Your previous favourite has been replaced.');
       }
     } else {
-      alert('Failed to updated favorite: ' + result.message);
+      alert('Failed to update favorite: ' + result.message);
     }
   } catch (error) {
     console.error('Error updating favourite: ', error);
@@ -525,13 +535,6 @@ const setupProfileDialog = () => {
   }
 };
 
-const filterRestaurants = (restaurants, company) => {
-  if (company === 'all') {
-    return restaurants;
-  }
-  return restaurants.filter((restaurant) => restaurant.company === company);
-};
-
 const updateRestaurantDisplay = (filteredRestaurants) => {
   try {
     if (!filteredRestaurants || filteredRestaurants.length === 0) {
@@ -624,8 +627,9 @@ const loadRestaurantDataWithLocation = async (userLat, userLon) => {
   }
 };
 
+// fetch daily menu from API
 const fetchMenu = async (restaurantID, language = 'fi') => {
-  const menuURL = `https://media2.edu.metropolia.fi/restaurant//api/v1/restaurants/daily/${restaurantID}/${language}`;
+  const menuURL = `https://media2.edu.metropolia.fi/restaurant/api/v1/restaurants/daily/${restaurantID}/${language}`;
   try {
     const response = await fetch(menuURL);
 
@@ -637,6 +641,45 @@ const fetchMenu = async (restaurantID, language = 'fi') => {
   }
 };
 fetchMenu('6470d38ecb12107db6fe24c2', 'fi');
+
+// fetch weekly menu from API
+const fetchWeeklyMenu = async (restaurantID, language = 'fi') => {
+  const menuURL = `https://media2.edu.metropolia.fi/restaurant/api/v1/restaurants/weekly/${restaurantID}/${language}`;
+
+  try {
+    const response = await fetch(menuURL);
+    const data = await response.json();
+    console.log('Weekly menu data: ', data);
+    return data;
+  } catch (error) {
+    console.log('Error fetching weekly menu: ', error);
+    return null;
+  }
+};
+
+// Setup menu type selector (Daily/Weekly buttons)
+const setupMenuTypeSelector = () => {
+  const dailyMenuBtn = document.getElementById('daily-menu-btn');
+  const weeklyMenuBtn = document.getElementById('weekly-menu-btn');
+
+  dailyMenuBtn.addEventListener('click', () => {
+    currentMenuType = 'daily';
+
+    // Update button styles
+    dailyMenuBtn.classList.add('active');
+    weeklyMenuBtn.classList.remove('active');
+
+    // Refresh modal if a restaurant is open
+  });
+
+  weeklyMenuBtn.addEventListener('click', () => {
+    currentMenuType = 'weekly';
+
+    // Update button styles
+    weeklyMenuBtn.classList.add('active');
+    dailyMenuBtn.classList.remove('active');
+  });
+};
 
 const yourLocation = document.getElementById('your-location');
 const results = document.querySelector('table');
@@ -688,14 +731,24 @@ const renderUI = (array) => {
       document.querySelectorAll('.highlight').forEach((element) => {
         element.classList.remove('highlight');
       });
+
       tr.classList.add('highlight');
 
       const dialog = document.querySelector('dialog');
 
-      const menuData = await fetchMenu(e._id, 'fi');
-      console.log('Menu for', e.name, ':', menuData);
+      let menuData;
+      let dialogContent;
 
-      const dialogContent = restaurantModal(e, menuData, isFavourite);
+      // Fetch correct menu based on selection
+      if (currentMenuType === 'weekly') {
+        menuData = await fetchWeeklyMenu(e._id, 'fi');
+        console.log('Weekly Menu for', e.name, ':', menuData);
+        dialogContent = restaurantModalWeekly(e, menuData, isFavourite);
+      } else {
+        menuData = await fetchMenu(e._id, 'fi');
+        console.log('Menu for', e.name, ':', menuData);
+        dialogContent = restaurantModal(e, menuData, isFavourite);
+      }
 
       dialog.innerHTML = dialogContent;
       dialog.showModal();
@@ -780,5 +833,5 @@ const getLocation = () => {
 setupAuthDialog();
 checkLoginStatus();
 setupProfileDialog();
-
+setupMenuTypeSelector();
 getLocation();

@@ -559,3 +559,33 @@ header h1 {
 .btn-favorite:hover {
   background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
 }
+
+.day-menu {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.day-menu:last-child {
+  border-bottom: none;
+}
+
+.day-menu h5 {
+  margin: 0 0 15px 0;
+  color: #113936;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #8ec7c3 0%, #a8d8d4 100%);
+  border-radius: 5px;
+  text-transform: capitalize;
+}
+
+.no-menu {
+  color: #666;
+  font-style: italic;
+}
+
+dialog .modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
