@@ -14,6 +14,7 @@ import {
   checkUsernameAvailability,
   updateUser,
   deleteUser,
+  uploadAvatar,
 } from './auth.js';
 
 fetchData(baseUrl);
@@ -150,11 +151,16 @@ const updateAuthUI = (user) => {
     userInfo.style.display = 'flex';
     welcomeMessage.textContent = `Welcome, ${user.username}!`;
     currentUser = user;
+    displayHeaderAvatar(user);
   } else {
     loginBtn.style.display = 'block';
     userInfo.style.display = 'none';
     welcomeMessage.textContent = '';
     currentUser = null;
+
+    // Hide avatar
+    const headerAvatar = document.getElementById('header-avatar');
+    headerAvatar.style.display = 'none';
   }
 };
 
@@ -513,10 +519,65 @@ const setupProfileDialog = () => {
     }
   });
 
+  // Avatar upload handling
+  const uploadAvatarbtn = document.getElementById('upload-avatar-btn');
+  const avatarInput = document.getElementById('avatar-input');
+
+  // Click upload button to trigger file input
+  uploadAvatarbtn.addEventListener('click', () => {
+    avatarInput.click();
+  });
+
+  avatarInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    // Show uploading state
+    uploadAvatarbtn.textContent = 'Uploading...';
+    uploadAvatarbtn.disabled = true;
+
+    // Upload avatar
+    const result = await uploadAvatar(file);
+
+    uploadAvatarbtn.textContent = 'Upload new Avatar';
+    uploadAvatarbtn.disabled = false;
+
+    if (result.success) {
+      alert('Avatar uploaded successfully!');
+
+      // refresh user data to get updated avatar
+      const updatedUser = await getCurrentUser();
+      if (updatedUser) {
+        currentUser = updatedUser;
+        updateAuthUI(updatedUser);
+        displayProfileAvatar(updatedUser);
+      }
+    } else {
+      alert('Failed to upload avatar: ' + result.message);
+    }
+
+    // Clear file input
+    avatarInput.value = '';
+  });
+
   function displayProfileInfo(user) {
     document.getElementById('profile-username-display').textContent =
       user.username;
     document.getElementById('profile-email-display').textContent = user.email;
+
+    displayProfileAvatar(user);
 
     document.getElementById('edit-username').value = user.username;
     document.getElementById('edit-email').value = user.email;
@@ -532,6 +593,67 @@ const setupProfileDialog = () => {
   function showProfileEdit() {
     profileView.style.display = 'none';
     profileEdit.style.display = 'block';
+  }
+};
+
+//  Get avatar URL from filename
+const getAvatarUrl = (avatarFilename) => {
+  if (!avatarFilename) return null;
+  return `https://media2.edu.metropolia.fi/restaurant/uploads/${avatarFilename}`;
+};
+
+// Display avatar in header
+const displayHeaderAvatar = (user) => {
+  const headerAvatar = document.getElementById('header-avatar');
+
+  if (user && user.avatar) {
+    headerAvatar.src = getAvatarUrl(user.avatar);
+
+    headerAvatar.style.display = 'inline-block';
+  } else {
+    headerAvatar.style.display = 'none';
+  }
+};
+
+// Display avatar in profile dialog
+const displayProfileAvatar = (user) => {
+  const profileAvatarImg = document.getElementById('profile-avatar-img');
+
+  if (user && user.avatar) {
+    profileAvatarImg.src = getAvatarUrl(user.avatar);
+    profileAvatarImg.style.display = 'block';
+  } else {
+    const firstLetter = user ? user.username.charAt(0).toUpperCase() : '?';
+
+    // Placeholder profile picture with first letter
+    const canvas = document.createElement('canvas');
+    canvas.width = 120;
+    canvas.height = 120;
+    const ctx = canvas.getContext('2d');
+
+    // Backgroud radient
+    const gradient = ctx.createLinearGradient(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    gradient.addColorStop(0, '#c1cdccff');
+    gradient.addColorStop(1, '#89a09fff');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    //Letter
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 60px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(firstLetter, canvas.width / 2, canvas.height / 2);
+
+    // Set as image source
+    profileAvatarImg.src = canvas.toDataURL();
+    profileAvatarImg.alt = `${user.username}' placeholder avatar`;
+    profileAvatarImg.style.display = 'block';
   }
 };
 

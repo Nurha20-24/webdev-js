@@ -174,6 +174,38 @@ const deleteUser = async () => {
   }
 };
 
+// Upload avatar image
+const uploadAvatar = async (file) => {
+  const token = getToken();
+  if (!token) {
+    return {success: false, message: 'Not logged in'};
+  }
+
+  try {
+    // Create form data for file upload
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await fetch(`${authBaseUrl}/users/avatar`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Upload failed');
+    }
+
+    return {success: true, avatar: data.data.avatar};
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    return {success: false, message: error.message};
+  }
+};
+
 export {
   getToken,
   saveToken,
@@ -186,4 +218,5 @@ export {
   logout,
   updateUser,
   deleteUser,
+  uploadAvatar,
 };

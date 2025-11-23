@@ -25,6 +25,13 @@
       <div id="user-controls">
         <button id="login-btn">Login</button>
         <div id="user-info" style="display: none">
+          <img
+            id="header-avatar"
+            class="user-avatar"
+            src=""
+            alt="Avatar"
+            style="display: none"
+          />
           <span id="welcome-message"></span>
           <button id="profile-btn">Profile</button>
           <button id="logout-btn">Logout</button>
@@ -159,6 +166,25 @@
     <dialog id="profile-dialog">
       <div class="profile-container">
         <h2>My Profile</h2>
+
+        <!--Avatar section-->
+        <div class="profile-avatar-section">
+          <div class="avatar-display">
+            <img id="profile-avatar-img" src="" alt="profile avatar" />
+          </div>
+          <div class="avatar-upload">
+            <input
+              type="file"
+              id="avatar-input"
+              accept="image/*"
+              style="display: none"
+            />
+            <button class="btn-upload" id="upload-avatar-btn">
+              Upload New Avatar
+            </button>
+            <small class="avatar-hint">PNG, JPG, max 5MB</small>
+          </div>
+        </div>
 
         <!--Profile view-->
         <div id="profile-view" class="profile-section">
