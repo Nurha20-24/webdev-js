@@ -736,3 +736,22 @@ dialog .modal-content {
   border: 2px solid white;
   margin-right: 10px;
 }
+
+.sort-btn {
+  padding: 12px 20px;
+  margin: 0 10px;
+  border: 2px solid #64b2b0;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  width: 180px;
+  box-sizing: border-box;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sort-btn:hover {
+  background-color: #76ccc9;
+}

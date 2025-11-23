@@ -24,6 +24,7 @@ let currentFilter = 'all';
 let currentUser = null;
 let currentCityFilter = 'all';
 let currentMenuType = 'daily';
+let currentSortMode = 'alphabetical';
 
 // City filter functions
 
@@ -676,8 +677,10 @@ const updateRestaurantDisplay = (filteredRestaurants) => {
         <th>Distance</th>
       </tr>`;
 
-    renderUI(filteredRestaurants);
-    renderMap(filteredRestaurants);
+    const sortedRestaurants = sortRestaurants(filteredRestaurants);
+
+    renderUI(sortedRestaurants);
+    renderMap(sortedRestaurants);
   } catch (error) {
     console.error('Error updating display: ', error);
     results.innerHTML = `
@@ -686,6 +689,52 @@ const updateRestaurantDisplay = (filteredRestaurants) => {
       Error loading restaurants</td>
     </tr>`;
   }
+};
+
+// Sort restaurants alphabetically or by distance
+
+// Sort resaturants by distance
+const sortRestaurantsByDistance = (array) => {
+  return array.sort((a, b) => {
+    const distanceA = a.distance || Infinity;
+    const distanceB = b.distance || Infinity;
+    return distanceA - distanceB;
+  });
+};
+
+// Sort restaurants based on current mode
+const sortRestaurants = (array) => {
+  if (currentSortMode === 'distance') {
+    return sortRestaurantsByDistance(array);
+  } else {
+    return sortRestaurantAlphabetically(array);
+  }
+};
+
+// Setup sort button
+const setupSortButton = () => {
+  const sortBtn = document.getElementById('sort-btn');
+
+  sortBtn.addEventListener('click', () => {
+    // Toggle sort mode
+    if (currentSortMode === 'alphabetical') {
+      currentSortMode = 'distance';
+      sortBtn.textContent = 'Sort: Distance 📍';
+      sortBtn.dataset.sort = 'distance';
+    } else {
+      currentSortMode = 'alphabetical';
+      sortBtn.textContent = 'Sort: Alphabetical ⬇';
+      sortBtn.dataset.sort = 'alphabetical';
+    }
+
+    // Reapply current filters with new sort
+    const filtered = filterRestaurantsByCompanyAndCity(
+      allRestaurants,
+      currentFilter,
+      currentCityFilter
+    );
+    updateRestaurantDisplay(filtered);
+  });
 };
 
 const setupFilters = () => {
@@ -981,4 +1030,5 @@ setupAuthDialog();
 checkLoginStatus();
 setupProfileDialog();
 setupMenuTypeSelector();
+setupSortButton();
 getLocation();
