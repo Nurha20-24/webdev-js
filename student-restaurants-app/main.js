@@ -332,7 +332,7 @@ const setupAuthDialog = () => {
       authTabs[0].click();
       registerForm.reset();
       usernameFeedback.textContent = '';
-      usernameFeedback.className = 'username-feedback';
+      usernameFeedback.className = 'edit-username-feedback';
     } else {
       errorDiv.textContent =
         result.message || 'Registration failed. Please try again.';
@@ -609,7 +609,6 @@ const displayHeaderAvatar = (user) => {
 
   if (user && user.avatar) {
     headerAvatar.src = getAvatarUrl(user.avatar);
-
     headerAvatar.style.display = 'inline-block';
   } else {
     headerAvatar.style.display = 'none';
@@ -660,14 +659,24 @@ const displayProfileAvatar = (user) => {
 
 const updateRestaurantDisplay = (filteredRestaurants) => {
   try {
+    const countDisplay = document.getElementById('restaurant-count');
+
     if (!filteredRestaurants || filteredRestaurants.length === 0) {
+      countDisplay.textContent = 'No restaurants found';
       results.innerHTML = `
     <tr>
-      <td colspan ="4" style="text-align: center; color: red;">
-     No ${currentFilter === 'all' ? '' : currentFilter + ' '}</td>
+      <td colspan="4" style="text-align: center; color: red;">
+     No ${
+       currentFilter === 'all' ? '' : currentFilter + ' '
+     }restaurants found</td>
     </tr>`;
       return;
     }
+
+    const count = filteredRestaurants.length;
+    countDisplay.textContent = `Showing ${count} restaurant${
+      count !== 1 ? 's' : ''
+    }`;
 
     results.innerHTML = `
       <tr>
@@ -683,9 +692,11 @@ const updateRestaurantDisplay = (filteredRestaurants) => {
     renderMap(sortedRestaurants);
   } catch (error) {
     console.error('Error updating display: ', error);
+    const countDisplay = document.getElementById('restaurant-count');
+    countDisplay.textContent = 'Error loading restaurants';
     results.innerHTML = `
     <tr>
-      <td colspan ="4" style="text-align: center; color: red;">
+      <td colspan="4" style="text-align: center; color: red;">
       Error loading restaurants</td>
     </tr>`;
   }
@@ -719,11 +730,11 @@ const setupSortButton = () => {
     // Toggle sort mode
     if (currentSortMode === 'alphabetical') {
       currentSortMode = 'distance';
-      sortBtn.textContent = 'Sort: Distance 📍';
+      sortBtn.textContent = 'Sort: Distance';
       sortBtn.dataset.sort = 'distance';
     } else {
       currentSortMode = 'alphabetical';
-      sortBtn.textContent = 'Sort: Alphabetical ⬇';
+      sortBtn.textContent = 'Sort: Alphabetical';
       sortBtn.dataset.sort = 'alphabetical';
     }
 
@@ -754,6 +765,7 @@ const setupFilters = () => {
     );
 
     updateRestaurantDisplay(filtered);
+    console.log('Calling updateRestaurantDisplay for the first time');
   });
 
   sodexoBtn.addEventListener('click', () => {
@@ -983,8 +995,9 @@ const proceedWithLocation = (userLat, userLon, restaurantData) => {
 
   populateCityFilter(allRestaurants);
   setupCityFilter();
-
+  setupSortButton();
   setupFilters();
+  updateRestaurantDisplay(alphabeticalRestaurant);
 };
 
 // Alphabetical sorting function
@@ -1030,5 +1043,4 @@ setupAuthDialog();
 checkLoginStatus();
 setupProfileDialog();
 setupMenuTypeSelector();
-setupSortButton();
 getLocation();

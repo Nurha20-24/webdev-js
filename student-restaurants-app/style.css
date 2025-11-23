@@ -41,7 +41,7 @@ th {
 
 td {
   border-bottom: 1px solid #ccc;
-  padding: 1rem;
+  padding: 1.3rem;
   transition: background-color 0.2s ease;
 }
 
@@ -130,20 +130,56 @@ tr:not(.highlight):hover {
 
 @media (max-width: 768px) {
   header {
+    flex-direction: column;
     padding: 1rem;
+    gap: 1rem;
   }
 
   header h1 {
     font-size: 1.4rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
+    text-align: center;
   }
 
   #user-controls {
-    gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+
+  #user-info {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2rem;
+  }
+
+  #welcome-message {
+    margin-right: 0;
+    text-align: center;
+  }
+
+  .user-avatar {
+    order: 0;
+    margin-right: 0;
+  }
+
+  #profile-btn,
+  #logout-btn {
+    order: 2;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+
+  #login-btn {
+    width: auto;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
   }
 
   .menu-type-selector {
     flex-direction: column;
+    gap: 10px;
   }
 
   .filters {
@@ -151,12 +187,17 @@ tr:not(.highlight):hover {
   }
 
   .filter-btn,
+  .sort-btn,
   .menu-btn,
   #city-filter {
     width: 100%;
     margin: 2px;
     padding: 10px 15px;
     font-size: 1rem;
+  }
+
+  .menu-type-selector .menu-btn {
+    width: 100%;
   }
 }
 
@@ -171,6 +212,7 @@ tr:not(.highlight):hover {
 
 .filter-btn,
 .menu-btn,
+.sort-btn,
 #city-filter {
   height: 44px;
   box-sizing: border-box;
@@ -183,13 +225,66 @@ tr:not(.highlight):hover {
   transition: all 0.3s ease;
   font-size: 1rem;
   font-weight: 600;
+  min-width: 180px;
+  color: #444343;
 }
 
 .filter-btn.active,
-.filter-btn:hover {
+.filter-btn:hover,
+.menu-btn.active,
+.menu-btn:hover,
+.sort-btn.active,
+.sort-btn:hover {
   background-color: var(--secondary-color);
-  transform: translateY(-2px); /* Subtle lift effect */
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(137, 199, 195, 0.3);
+}
+
+.menu-type-selector {
+  display: flex;
+  margin: 20px 0;
+  justify-content: center;
+  gap: 10px;
+}
+
+.menu-btn {
+  background: transparent;
+  height: 55px;
+  font-size: 1.05rem;
+}
+
+#city-filter {
+  padding: 10px 15px;
+  border: 2px solid #89c7c3;
+  font-weight: bold;
+  background: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#city-filter:hover {
+  background-color: #f1eeee;
+}
+
+#welcome-message {
+  font-weight: 500;
+  margin-right: 15px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+}
+
+#your-location {
+  background: white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  margin: 8px 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  font-weight: 500;
+  border-left: 4px solid #89c7c3;
+  font-size: 0.9rem;
 }
 
 header {
@@ -234,51 +329,6 @@ header h1 {
 #logout-btn:hover {
   color: #2c5f5d;
   background-color: white;
-}
-
-.menu-type-selector {
-  display: flex;
-  margin: 20px 0;
-  justify-content: center;
-}
-
-.menu-btn.active,
-.menu-btn:hover {
-  background-color: #89c7c3;
-}
-
-#city-filter {
-  padding: 10px 15px;
-  border: 2px solid #89c7c3;
-  font-weight: bold;
-  background: white;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-#city-filter:hover {
-  background-color: #f5f5f5;
-}
-
-#welcome-message {
-  font-weight: 500;
-  margin-right: 15px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  backdrop-filter: blur(10px);
-}
-
-#your-location {
-  background: white;
-  padding: 8px 15px;
-  border-radius: 8px;
-  margin: 8px 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  font-weight: 500;
-  border-left: 4px solid #89c7c3;
-  font-size: 0.9rem;
 }
 
 #auth-dialog,
@@ -503,7 +553,6 @@ header h1 {
   margin: 0;
   font-size: 1.1rem;
   color: #333;
-  word-break: break-word;
 }
 
 .profile-actions {
@@ -635,56 +684,6 @@ dialog .modal-content {
   vertical-align: middle;
 }
 
-/* Avatar Section Styles */
-.profile-avatar-section {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.avatar-display {
-  margin-bottom: 1rem;
-}
-
-.avatar-display img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #89c7c3;
-}
-
-.btn-upload {
-  padding: 10px 20px;
-  background-color: #89c7c3;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-}
-
-.btn-upload:hover {
-  background-color: #7db4b0;
-}
-
-.avatar-hint {
-  display: block;
-  margin-top: 0.5rem;
-  color: #666;
-  font-size: 0.8rem;
-}
-
-.header-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid white;
-}
-
 .profile-avatar-section {
   display: flex;
   align-items: center;
@@ -700,11 +699,11 @@ dialog .modal-content {
 }
 
 .avatar-display img {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #89c7c3;
+  border: 3px solid #89c7c3;
 }
 
 .avatar-upload {
@@ -717,6 +716,10 @@ dialog .modal-content {
   padding: 10px 20px;
   background-color: #59a4a2;
   font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
 }
 
 .btn-upload:hover {
@@ -724,8 +727,11 @@ dialog .modal-content {
 }
 
 .avatar-hint {
+  margin-top: 0.5rem;
+  display: block;
   color: #666;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 .user-avatar {
@@ -738,20 +744,25 @@ dialog .modal-content {
 }
 
 .sort-btn {
-  padding: 12px 20px;
-  margin: 0 10px;
-  border: 2px solid #64b2b0;
-  background: white;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
-  width: 180px;
-  box-sizing: border-box;
-  text-align: center;
-  white-space: nowrap;
+  min-width: 180px;
 }
 
 .sort-btn:hover {
-  background-color: #76ccc9;
+  background-color: #89c7c3;
+}
+
+.sort-btn[data-sort='distance'] {
+  background-color: #83c6c5;
+}
+
+.restaurant-count {
+  margin: 15px 5px;
+  font-weight: 600;
+  color: #295d5c;
+  font-size: 1rem;
+  padding: 10px 20px;
+  background-color: #f6f8f9;
+  border-radius: 6px;
+  border-left: 3px solid #89c7c3;
+  display: block;
 }
