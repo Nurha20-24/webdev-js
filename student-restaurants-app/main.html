@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A web app for Finnish student restaurants with daily and weekly menus. Filter by company, city, and distance. View restaurant restaurants locations on an interactive map."
+    />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -28,7 +32,7 @@
           <img
             id="header-avatar"
             class="user-avatar"
-            src=""
+            src="https://placehold.co/400x250"
             alt="Avatar"
             style="display: none"
           />
@@ -52,7 +56,7 @@
         <button id="sodexo-btn" class="filter-btn">Sodexo</button>
         <button id="compass-btn" class="filter-btn">Compass Group</button>
 
-        <select id="city-filter">
+        <select id="city-filter" aria-label="filter by city">
           <option value="all">All Cities</option>
         </select>
 
@@ -176,7 +180,11 @@
         <!--Avatar section-->
         <div class="profile-avatar-section">
           <div class="avatar-display">
-            <img id="profile-avatar-img" src="" alt="profile avatar" />
+            <img
+              id="profile-avatar-img"
+              src="https://placehold.co/400x250"
+              alt="profile avatar"
+            />
           </div>
           <div class="avatar-upload">
             <input
